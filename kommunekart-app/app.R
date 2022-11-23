@@ -84,7 +84,7 @@ server <- function(input, output, session) {
     } else if (tolower(file_ext(infile$datapath)) == "csv") {
       df <- read_csv2(infile$datapath)
     } else if (tolower(file_ext(infile$datapath)) == "dta") {
-      df <- read_dta(infile$datapath) %>%
+      df <- read_dta(infile$datapath) |>
         mutate(across(where(is.labelled), as_factor))
     }
     
@@ -99,22 +99,22 @@ server <- function(input, output, session) {
   
   kart <- eventReactive(input$kommuneår, {
     filnavn <- paste0("kommuner_", input$kommuneår, "_simplest_2.rds")
-    readRDS(filnavn) %>%
-      st_set_crs(25833) %>%
+    readRDS(filnavn) |>
+      st_set_crs(25833) |>
       mutate(kommunenummer = as.numeric(kommunenummer))
   })
   
   kart_kommunedata <- eventReactive(input$plot, {
     req(input$keyvar)
-    kdata <- kommunedata() %>%
+    kdata <- kommunedata() |>
       mutate(kommunenummer = as.numeric(.[[input$keyvar]]),
              fillvar = .[[input$fillvar]])
     # Kommuner som skal vises
     if(input$show_which == "Alle") {
-      d <- left_join(kart(), kdata, by = "kommunenummer") %>%
+      d <- left_join(kart(), kdata, by = "kommunenummer") |>
         st_transform(4326) # Need EPSG:4326 for leaflet
     } else {
-      d <- inner_join(kart(), kdata, by = "kommunenummer") %>%
+      d <- inner_join(kart(), kdata, by = "kommunenummer") |>
         st_transform(4326) # Need EPSG:4326 for leaflet
     }
 
@@ -125,7 +125,7 @@ server <- function(input, output, session) {
       } else if (input$fillvar_fmt == "Persentiler") {
         breaks <- quantile(d$fillvar, probs = seq(0, 1, by = (1 / input$fillvar_numcat)), na.rm = TRUE)
       } 
-      d <- d %>%
+      d <- d |>
         mutate(fillvar = cut(fillvar, breaks = breaks, include.lowest = TRUE, dig.lab = 10))
     }
     
@@ -183,12 +183,12 @@ server <- function(input, output, session) {
                               reverse = input$palette_rev)   
     }
     
-    lmap <- leaflet(kart_kommunedata()) %>%
+    lmap <- leaflet(kart_kommunedata()) |>
       addPolygons(stroke = TRUE, weight = 0.5, color = "black", smoothFactor = 0, 
                   fillColor = ~pal_fun(fillvar),
                   fillOpacity = 0.7, 
-                  popup = popupTable(kart_kommunedata())) %>%
-      addProviderTiles(provider = "Stamen.TonerLite")  %>%
+                  popup = popupTable(kart_kommunedata())) |>
+      addProviderTiles(provider = "Stamen.TonerLite")  |>
       addLegend("bottomright", pal = pal_fun, values = ~fillvar,
                 title = fillvar_lab(),
                 opacity = 1
@@ -196,11 +196,11 @@ server <- function(input, output, session) {
     
     lmap <- if (input$fylke == TRUE) {
       filnavn <- paste0("fylker_", input$kommuneår, "_simplest_2.rds")
-      fylker <- readRDS(filnavn) %>%
-        st_set_crs(25833) %>%
+      fylker <- readRDS(filnavn) |>
+        st_set_crs(25833) |>
         st_transform(4326)
       
-      lmap %>%
+      lmap |>
         addPolygons(data = fylker, stroke = TRUE, weight = 1.2, color = "black")
     } else {
       lmap
@@ -218,8 +218,8 @@ server <- function(input, output, session) {
                            input$border == "Hvit" ~ "white")
     
     if (input$fillvar_type == "Kontinuerlig" & input$fillvar_fmt == "Rådata") {
-      kart_kommunedata() %>%
-        st_transform(25833) %>%
+      kart_kommunedata() |>
+        st_transform(25833) |>
         ggplot() +
         geom_sf(aes(fill = fillvar), color = input$border) +
         scale_fill_distiller(type = "div",
@@ -235,8 +235,8 @@ server <- function(input, output, session) {
               legend.position = c(0.55, 0.5),
               legend.justification = c("left", "top"))
       } else {
-      kart_kommunedata() %>% 
-        st_transform(25833) %>% 
+      kart_kommunedata() |> 
+        st_transform(25833) |> 
         ggplot() +
         geom_sf(aes(fill = factor(fillvar)), color = input$border) +
         scale_fill_brewer(palette = input$palette, direction = palette_dir, 
@@ -253,7 +253,7 @@ server <- function(input, output, session) {
   output$map_static <- renderPlot(width = 700, height = 700, res = 96, {
     if (input$fylke == TRUE) {
       filnavn <- paste0("fylker_", input$kommuneår, "_simplest_2.rds")
-      fylker <- readRDS(filnavn) %>%
+      fylker <- readRDS(filnavn) |>
         st_set_crs(25833)
       
       data$map_static() + 
@@ -275,7 +275,7 @@ server <- function(input, output, session) {
       
       p <- if (input$fylke == TRUE) {
         filnavn <- paste0("fylker_", input$kommuneår, "_simplest_2.rds")
-        fylker <- readRDS(filnavn) %>%
+        fylker <- readRDS(filnavn) |>
           st_set_crs(25833)
         
         p + 

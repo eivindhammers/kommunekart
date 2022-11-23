@@ -1,9 +1,9 @@
 # build the Docker image from the base image 'openanalytics/r-base'
 # this is an Ubuntu 16.04 LTS with a recent R version.
 # this image is available on Docker hub at https://hub.docker.com/r/openanalytics/r-base/
-FROM openanalytics/r-base
+FROM r-base:4.2.2
 # add the maintainer of this Docker image (this should be you in this case)
-LABEL maintainer "Eivind Moe Hammersmark <emh@osloeconomics.no>"
+LABEL maintainer "Eivind Moe Hammersmark <eivindhammers@gmail.com>"
 # system libraries of general use
 #RUN apt-get update && apt-get install -y \
 #sudo \
